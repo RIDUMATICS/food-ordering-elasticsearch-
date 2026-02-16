@@ -1,10 +1,27 @@
-import { Food } from "src/foods/entities/food.entity";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from 'src/users/entities/user.entity';
+import { Food } from 'src/foods/entities/food.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 
 @Entity('vendors')
 export class Vendor {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @OneToOne(() => User, (user) => user.vendor)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @Column({ name: 'user_id', nullable: true })
+  userId: string;
 
   @Column()
   name: string;
