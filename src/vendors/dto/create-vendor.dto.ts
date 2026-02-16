@@ -1,9 +1,27 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsEmail,
+  MinLength,
+} from 'class-validator';
 
 export class CreateVendorDto {
+  @IsEmail()
+  email: string;
+
   @IsString()
-  @IsNotEmpty({ message: 'Vendor name is required' })
-  name: string;
+  @IsNotEmpty()
+  name: string; // User's name
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  vendorName: string;
 
   @IsString()
   @IsOptional()
@@ -21,15 +39,9 @@ export class CreateVendorDto {
   @IsNotEmpty()
   state: string;
 
-  // Latitude must be between -90 and 90
   @IsNumber()
-  @Min(-90)
-  @Max(90)
   latitude: number;
 
-  // Longitude must be between -180 and 180
   @IsNumber()
-  @Min(-180)
-  @Max(180)
   longitude: number;
 }

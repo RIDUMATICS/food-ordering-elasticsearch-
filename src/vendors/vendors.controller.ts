@@ -18,10 +18,10 @@ import { Vendor } from './entities/vendor.entity';
 export class VendorsController {
   constructor(private readonly vendorsService: VendorsService) {}
 
-  // POST /vendors
-  @Post()
-  async create(@Body() createVendorDto: CreateVendorDto): Promise<Vendor> {
-    return this.vendorsService.create(createVendorDto);
+  // POST /vendors/register - Public endpoint to register new vendor
+  @Post('register')
+  async register(@Body() createVendorDto: CreateVendorDto): Promise<Vendor> {
+    return this.vendorsService.register(createVendorDto);
   }
 
   // GET /vendors
