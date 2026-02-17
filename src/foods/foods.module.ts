@@ -5,11 +5,10 @@ import { FoodCategory } from './entities/food-category.entity';
 import { FoodsService } from './foods.service';
 import { FoodsController } from './foods.controller';
 import { SearchModule } from '../search/search.module';
-import { FoodIndexingService } from './food-indexing.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Food, FoodCategory]), SearchModule],
-  providers: [FoodsService, FoodIndexingService],
+  providers: [FoodsService],
   controllers: [FoodsController],
 })
 export class FoodsModule {}

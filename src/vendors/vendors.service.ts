@@ -48,6 +48,10 @@ export class VendorsService {
       const savedVendor = await queryRunner.manager.save(vendor);
 
       await queryRunner.commitTransaction();
+
+      // Index in Elasticsearch after successful transaction
+      // Indexing removed as per new requirement
+
       return savedVendor;
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -74,7 +78,8 @@ export class VendorsService {
   async update(id: string, updateVendorDto: UpdateVendorDto): Promise<Vendor> {
     const vendor = await this.findOne(id);
     Object.assign(vendor, updateVendorDto);
-    return this.vendorRepository.save(vendor);
+    const savedVendor = await this.vendorRepository.save(vendor);
+    return savedVendor;
   }
 
   async remove(id: string): Promise<void> {

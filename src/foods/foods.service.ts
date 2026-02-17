@@ -6,7 +6,6 @@ import { UpdateFoodDto } from './dto/update-food.dto';
 import { Food } from './entities/food.entity';
 import { FoodCategory } from './entities/food-category.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
-import { FoodIndexingService } from './food-indexing.service';
 
 @Injectable()
 export class FoodsService {
@@ -15,7 +14,6 @@ export class FoodsService {
     private readonly foodRepository: Repository<Food>,
     @InjectRepository(FoodCategory)
     private readonly categoryRepository: Repository<FoodCategory>,
-    private readonly foodIndexingService: FoodIndexingService,
   ) {}
 
   async createFood(createFoodDto: CreateFoodDto): Promise<Food> {
@@ -36,7 +34,6 @@ export class FoodsService {
     });
 
     const savedFood = await this.foodRepository.save(food);
-    await this.foodIndexingService.indexFood(savedFood);
     return savedFood;
   }
 
@@ -77,7 +74,6 @@ export class FoodsService {
 
     Object.assign(food, updateData);
     const savedFood = await this.foodRepository.save(food);
-    await this.foodIndexingService.indexFood(savedFood);
     return savedFood;
   }
 
@@ -85,7 +81,6 @@ export class FoodsService {
     const food = await this.findOne(id);
     food.price = price;
     const savedFood = await this.foodRepository.save(food);
-    await this.foodIndexingService.indexFood(savedFood);
     return savedFood;
   }
 
@@ -93,14 +88,12 @@ export class FoodsService {
     const food = await this.findOne(id);
     food.isAvailable = isAvailable;
     const savedFood = await this.foodRepository.save(food);
-    await this.foodIndexingService.indexFood(savedFood);
     return savedFood;
   }
 
   async remove(id: string): Promise<void> {
     const food = await this.findOne(id);
     await this.foodRepository.remove(food);
-    await this.foodIndexingService.removeIndex(id);
   }
 
   // Categories
@@ -114,14 +107,5 @@ export class FoodsService {
 
   async findAllCategories(): Promise<FoodCategory[]> {
     return this.categoryRepository.find();
-  }
-
-  async reindexAll() {
-    const foods = await this.foodRepository.find({
-      relations: ['category', 'vendor'],
-    });
-    for (const food of foods) {
-      await this.foodIndexingService.indexFood(food);
-    }
   }
 }
