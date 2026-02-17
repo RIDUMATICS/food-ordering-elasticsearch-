@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, Repository, DataSource } from 'typeorm';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { Vendor } from './entities/vendor.entity';
@@ -12,30 +12,49 @@ export class VendorsService {
     @InjectRepository(Vendor)
     private readonly vendorRepository: Repository<Vendor>,
     private readonly usersService: UsersService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async register(createVendorDto: CreateVendorDto): Promise<Vendor> {
-    // 1. Create User
-    const user = await this.usersService.create({
-      email: createVendorDto.email,
-      password: createVendorDto.password,
-      name: createVendorDto.name,
-      isVendor: true,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    // 2. Create Vendor
-    const vendor = this.vendorRepository.create({
-      name: createVendorDto.vendorName,
-      description: createVendorDto.description,
-      address: createVendorDto.address,
-      city: createVendorDto.city,
-      state: createVendorDto.state,
-      latitude: createVendorDto.latitude,
-      longitude: createVendorDto.longitude,
-      userId: user.id,
-    });
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    return this.vendorRepository.save(vendor);
+    try {
+      // 1. Create User
+      const user = await this.usersService.create(
+        {
+          email: createVendorDto.email,
+          password: createVendorDto.password,
+          name: createVendorDto.name,
+          isVendor: true,
+        },
+        queryRunner.manager,
+      );
+
+      // 2. Create Vendor
+      const vendor = queryRunner.manager.create(Vendor, {
+        name: createVendorDto.vendorName,
+        description: createVendorDto.description,
+        address: createVendorDto.address,
+        city: createVendorDto.city,
+        state: createVendorDto.state,
+        latitude: createVendorDto.latitude,
+        longitude: createVendorDto.longitude,
+        userId: user.id,
+      });
+
+      const savedVendor = await queryRunner.manager.save(vendor);
+
+      await queryRunner.commitTransaction();
+      return savedVendor;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findAll(query: FindOptionsWhere<Vendor>): Promise<Vendor[]> {
