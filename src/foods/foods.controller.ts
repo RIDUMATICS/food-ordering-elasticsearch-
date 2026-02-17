@@ -53,11 +53,6 @@ export class FoodsController {
     return this.foodsService.remove(id);
   }
 
-  @Post('reindex')
-  reindexAll() {
-    return this.foodsService.reindexAll();
-  }
-
   // Category endpoints
   @Post('categories')
   createCategory(@Body() body: { name: string; description?: string }) {
